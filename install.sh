@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # SUPER DOCKER PANEL (SDP) - Automatyczny skrypt instalacyjny
-# Wykrywa system i instaluje zależności (Docker, Node.js, npm)
-# Data: 31.08.2025, 22:40 CEST
+# Wykrywa system, instaluje zależności, rozwiązuje konflikty, odpowiada na monity, sprawdza Docker, usuwa stare kontenery
+# Data: 01.09.2025, 01:00 CEST
 
 # Kolory dla czytelności
 RED='\033[0;31m'
@@ -33,12 +33,20 @@ install_dependencies() {
     case "$OS" in
         "Ubuntu"|"Debian GNU/Linux"|"Raspbian GNU/Linux")
             echo -e "${GREEN}Instalacja Dockera...${NC}"
-            apt install -y apt-transport-https ca-certificates curl software-properties-common
+            apt install -y apt-transport-https ca-certificates curl software-properties-common gcc python3-dev
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
             apt update -y
             apt install -y docker-ce docker-ce-cli containerd.io
+            systemctl start docker
+            systemctl enable docker
             usermod -aG docker $USER
+
+            echo -e "${GREEN}Sprawdzenie demona Dockera...${NC}"
+            if ! docker ps > /dev/null 2>&1; then
+                echo -e "${RED}Docker nie działa. Uruchamianie...${NC}"
+                systemctl restart docker
+            fi
 
             echo -e "${GREEN}Instalacja Node.js i npm...${NC}"
             curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -72,15 +80,22 @@ setup_sdp() {
     npm install
 
     echo -e "${GREEN}Budowanie frontendu...${NC}"
-    npm run build
+    echo y | npm run build  # Automatycznie odpowiada Y na monit browserslist
 
     cd ..
+
+    echo -e "${GREEN}Sprawdzanie i usuwanie starego kontenera...${NC}"
+    if docker ps -a | grep -q super-docker-panel; then
+        echo -e "${GREEN}Zatrzymywanie i usuwanie starego kontenera...${NC}"
+        docker stop super-docker-panel > /dev/null 2>&1
+        docker rm super-docker-panel > /dev/null 2>&1
+    fi
 
     echo -e "${GREEN}Budowanie obrazu Dockera...${NC}"
     docker build -t super-docker-panel .
 
     echo -e "${GREEN}Uruchamianie kontenera...${NC}"
-    docker run -d -p 5000:5000 --name super-docker-panel --privileged super-docker-panel
+    docker run -d -p 5000:5000 -v /var/run/docker.sock:/var/run/docker.sock --name super-docker-panel super-docker-panel
 
     echo -e "${GREEN}Sprawdzenie statusu kontenera...${NC}"
     if ! docker ps | grep -q super-docker-panel; then
