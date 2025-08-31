@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
-import docker
+from docker import DockerClient
 import psutil
 
 app = Flask(__name__)
@@ -11,7 +11,7 @@ jwt = JWTManager(app)
 USERS = {"admin": "admin"}
 
 # Inicjalizacja klienta Docker
-client = docker.from_client()
+client = DockerClient(base_url='unix://var/run/docker.sock')
 
 @app.route('/api/login', methods=['POST'])
 def login():
