@@ -13,3 +13,10 @@ export const getContainers = async (token: string) => {
   });
   return response.data;
 };
+
+export const getSystem = async (token: string) => {
+  const response = await axios.get(`${API_URL}/system`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
