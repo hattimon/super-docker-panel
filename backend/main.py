@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from docker import DockerClient
 import psutil
+import subprocess  # Dla WiFi
+import os
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config["JWT_SECRET_KEY"] = "super-secret-key"  # Zmień na bezpieczny klucz w produkcji
@@ -13,11 +15,11 @@ USERS = {"admin": "admin"}
 # Inicjalizacja klienta Docker
 client = DockerClient(base_url='unix://var/run/docker.sock')
 
-# Serwowanie głównej strony (index.html z frontendu)
+# Serwowanie frontendu
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    if path != "" and app.static_folder:
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, 'index.html')
 
@@ -61,6 +63,25 @@ def get_system():
     disk = {"used": psutil.disk_usage('/').used / 1024 / 1024, "total": psutil.disk_usage('/').total / 1024 / 1024}
     network = {"ip": "127.0.0.1", "interface": "eth0", "speed": 100}
     return jsonify({"cpu": cpu, "ram": ram, "disk": disk, "network": network, "error": None})
+
+@app.route('/api/wifi', methods=['GET'])
+@jwt_required()
+def get_wifi():
+    try:
+        result = subprocess.run(['nmcli', 'device', 'wifi', 'list'], capture_output=True, text=True)
+        networks = result.stdout.split('\n')
+        return jsonify({"networks": networks, "error": None})
+    except Exception as e:
+        return jsonify({"networks": [], "error": str(e)})
+
+@app.route('/api/maintenance/clean', methods=['POST'])
+@jwt_required()
+def clean_maintenance():
+    try:
+        subprocess.run(['docker', 'system', 'prune', '-f'], capture_output=True, text=True)
+        return jsonify({"success": True, "message": "Czyszczenie zakończone", "error": None})
+    except Exception as e:
+        return jsonify({"success": False, "message": "", "error": str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
