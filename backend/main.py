@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from docker import DockerClient
 import psutil
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.config["JWT_SECRET_KEY"] = "super-secret-key"  # Zmień na bezpieczny klucz w produkcji
 jwt = JWTManager(app)
 
@@ -12,6 +12,14 @@ USERS = {"admin": "admin"}
 
 # Inicjalizacja klienta Docker
 client = DockerClient(base_url='unix://var/run/docker.sock')
+
+# Serwowanie głównej strony (index.html z frontendu)
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and app.static_folder:
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/login', methods=['POST'])
 def login():
