@@ -47,7 +47,8 @@ def container_action():
 @app.route('/api/system', methods=['GET'])
 @jwt_required()
 def get_system():
-    cpu = {"name": "Raspberry Pi 4", "usage": psutil.cpu_percent(), "temp": psutil.sensors_temperatures()['coretemp'][0].current if psutil.sensors_temperatures() else 0}
+    temp = psutil.sensors_temperatures().get('coretemp', [None])[0].current if psutil.sensors_temperatures() else 0
+    cpu = {"name": "Raspberry Pi 4", "usage": psutil.cpu_percent(), "temp": temp if temp is not None else 0}
     ram = {"used": psutil.virtual_memory().used / 1024 / 1024, "total": psutil.virtual_memory().total / 1024 / 1024}
     disk = {"used": psutil.disk_usage('/').used / 1024 / 1024, "total": psutil.disk_usage('/').total / 1024 / 1024}
     network = {"ip": "127.0.0.1", "interface": "eth0", "speed": 100}
