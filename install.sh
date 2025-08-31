@@ -2,7 +2,7 @@
 
 # SUPER DOCKER PANEL (SDP) - Automatyczny skrypt instalacyjny
 # Wykrywa system, instaluje zależności, rozwiązuje konflikty, odpowiada na monity, sprawdza Docker, usuwa stare kontenery
-# Data: 01.09.2025, 01:00 CEST
+# Data: 01.09.2025, 01:11 CEST
 
 # Kolory dla czytelności
 RED='\033[0;31m'
@@ -34,7 +34,7 @@ install_dependencies() {
         "Ubuntu"|"Debian GNU/Linux"|"Raspbian GNU/Linux")
             echo -e "${GREEN}Instalacja Dockera...${NC}"
             apt install -y apt-transport-https ca-certificates curl software-properties-common gcc python3-dev
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg --yes  # --yes dla nadpisania
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
             apt update -y
             apt install -y docker-ce docker-ce-cli containerd.io
