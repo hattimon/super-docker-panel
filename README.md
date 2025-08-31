@@ -3,8 +3,8 @@
 Lekki panel www do zarządzania systemem i kontenerami Docker, zoptymalizowany dla urządzeń takich jak Raspberry Pi.
 
 ## Wymagania
-- Docker
-- Node.js (do budowy frontendu)
+- Uprawnienia roota (sudo)
+- Połączenie z internetem
 
 ## Instalacja
 1. Skonfiguruj repozytorium:
@@ -13,21 +13,14 @@ Lekki panel www do zarządzania systemem i kontenerami Docker, zoptymalizowany d
    cd super-docker-panel
    ```
 
-2. Zbuduj frontend:
+2. Uruchom skrypt instalacyjny (automatyczna konfiguracja):
    ```bash
-   cd frontend
-   npm install
-   npm run build
-   cd ..
+   sudo bash install.sh
    ```
+   - Skrypt wykryje system (Ubuntu, Debian, Raspberry Pi OS), zainstaluje Docker, Node.js, npm, zbuduje frontend i uruchomi kontener.
+   - Jeśli napotkasz błędy, sprawdź logi: `docker logs super-docker-panel`.
 
-3. Zbuduj i uruchom kontener:
-   ```bash
-   docker build -t super-docker-panel .
-   docker run -d -p 5000:5000 --name super-docker-panel --privileged super-docker-panel
-   ```
-
-4. Dostęp:
+3. Dostęp:
    - Otwórz przeglądarkę i przejdź do `http://localhost:5000`.
    - Logowanie: `admin` / `admin` (zmień hasło w ustawieniach).
 
@@ -42,4 +35,4 @@ Lekki panel www do zarządzania systemem i kontenerami Docker, zoptymalizowany d
 MIT
 
 ## Data utworzenia
-31.08.2025, 22:13 CEST
+31.08.2025, 22:40 CEST
