@@ -9,7 +9,7 @@ Lekki panel www do zarządzania systemem i kontenerami Docker, zoptymalizowany d
 ## Instalacja
 1. Skonfiguruj repozytorium:
    ```bash
-   git clone https://github.com/twoje-uzytkownik/super-docker-panel.git
+   git clone https://github.com/hattimon/super-docker-panel.git
    cd super-docker-panel
    ```
 
